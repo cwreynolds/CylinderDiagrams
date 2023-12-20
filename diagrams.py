@@ -1,8 +1,9 @@
 #-------------------------------------------------------------------------------
 #
-# diagrams.py -- new flock experiments
+# diagrams.py -- CylinderDiagrams
 #
 # Some non-polished code to generate 3d diagrams for documentation.
+# See diagram on https://en.wikipedia.org/wiki/Line-cylinder_intersection
 #
 # Everything in one big file for now, more organization when it seems warranted.
 #
@@ -39,16 +40,12 @@ def add_line_as_cylinder(vis,
                          color=Vec3(),
                          reset_bounding_box=False,
                          shaded=False):
+    # Create cylinder mesh of given shape in default orientation (along Z axis).
     cyl = o3d.geometry.TriangleMesh.create_cylinder(radius, height, chords, 100)
-    default_axis = Vec3(0, 0, 1)
-    line_tangent = line_tangent.normalize()
-    rot_axis = default_axis.cross(line_tangent)
-    if rot_axis.length() > 0:
-        axis_dot = default_axis.dot(line_tangent)
-        angle = math.acos(axis_dot)
-        aa = rot_axis.normalize() * angle
-        rotation = o3d.geometry.get_rotation_matrix_from_axis_angle(aa.asarray())
-        cyl.rotate(rotation)
+    # Rotate cylinder mesh from default axis to given tangent
+    aa = Vec3.rotate_vec_to_vec(Vec3(0, 0, 1), line_tangent)
+    rotation = o3d.geometry.get_rotation_matrix_from_axis_angle(aa.asarray())
+    cyl.rotate(rotation)
     cyl.translate(line_origin.asarray())
     if shaded:
         cyl.compute_vertex_normals()
